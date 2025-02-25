@@ -50,18 +50,93 @@ st.markdown("""
 This tool detects pneumonia from chest X-ray images using a hybrid UNet model.
 Upload an X-ray image and enter patient details to get a segmentation mask and classification result.
 """)
+# Custom CSS to make the sidebar fixed and always expanded
+st.markdown("""
+<style>
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        min-width: 250px;
+        max-width: 250px;
+        position: fixed;
+    }
+    section[data-testid="stSidebarContent"] {
+        background-color: #f0f2f6;
+        padding-top: 2rem;
+    }
+    
+    /* Custom styles as provided */
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1E88E5;
+        margin-bottom: 1rem;
+    }
+    .sub-header {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1565C0;
+        margin-bottom: 1rem;
+    }
+    .result-container {
+        background-color: #f0f2f6;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .priority-high {
+        color: #D32F2F;
+        font-weight: bold;
+    }
+    .priority-medium {
+        color: #FB8C00;
+        font-weight: bold;
+    }
+    .priority-low {
+        color: #388E3C;
+        font-weight: bold;
+    }
+    .calendar-event {
+        background-color: #E3F2FD;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border-left: 4px solid #1E88E5;
+    }
+</style>
+""", unsafe_allow_html=True)
+# Sidebar for patient information
+st.sidebar.markdown("<div class='sub-header'>Patient Information</div>", unsafe_allow_html=True)
+
+patient_name = st.sidebar.text_input("Patient Name", "John Doe")
+age = st.sidebar.number_input("Age", min_value=1, max_value=100, value=45)
+
+sex_options = {"Male": 0, "Female": 1}
+sex_choice = st.sidebar.radio("Sex", list(sex_options.keys()))
+sex = sex_options[sex_choice]
+
+position_options = {"Anterior-Posterior (AP)": 0, "Posterior-Anterior (PA)": 1}
+position_choice = st.sidebar.radio("X-ray Position", list(position_options.keys()))
+position = position_options[position_choice]
+
+# Symptoms input
+symptoms = st.sidebar.text_area("Symptoms", 
+                               placeholder="Enter patient's symptoms...",
+                               value="Cough, fever, shortness of breath")
+
+# Model information
+st.sidebar.markdown("<div class='sub-header'>Model Information</div>", unsafe_allow_html=True)
+st.sidebar.info("""
+This application uses:
+- UNet model for pneumonia detection
+- DeepLabV3 model for tuberculosis detection
+- Gemini LLM for analysis and scheduling
+
+Make sure the model files are in the same directory:
+- model_unet.keras
+- _best_model.pt
+""")
 
 # Image Upload
 uploaded_file = st.file_uploader("📤 Upload Chest X-ray Image", type=["jpg", "jpeg", "png"])
-
-# Metadata Input
-age = st.slider("Patient Age", min_value=0, max_value=100, value=50)
-sex = st.radio("Sex", ["Male", "Female"])
-position = st.radio("Position", ["AP (Anterior-Posterior)", "PA (Posterior-Anterior)"])
-
-# Mapping for model input
-sex_mapping = {"Male": 0, "Female": 1}
-position_mapping = {"AP (Anterior-Posterior)": 0, "PA (Posterior-Anterior)": 1}
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
@@ -73,7 +148,7 @@ if uploaded_file is not None:
 
     if st.button("🔍 Analyze X-ray"):
         with st.spinner("Processing image..."):
-            mask, pneumonia_prob = predict_pneumonia(image_np, age, sex_mapping[sex], position_mapping[position])
+            mask, pneumonia_prob = predict_pneumonia(image_np, age, sex, position)
 
         # Display results
         fig, ax = plt.subplots(1, 2, figsize=(12, 6))
@@ -95,3 +170,4 @@ if uploaded_file is not None:
             st.error(f"⚠️ **Pneumonia Detected!** (Probability: {probability_percentage:.2f}%)")
         else:
             st.success(f"✅ **No Pneumonia Detected.** (Probability: {probability_percentage:.2f}%)")
+

@@ -43,20 +43,98 @@ def detect_tuberculosis(image_path, age, sex, position, device=None):
         "original_image": image_path
     }
 
+# Streamlit UI
+# Custom CSS to make the sidebar fixed and always expanded
+st.markdown("""
+<style>
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        min-width: 250px;
+        max-width: 250px;
+        position: fixed;
+    }
+    section[data-testid="stSidebarContent"] {
+        background-color: #f0f2f6;
+        padding-top: 2rem;
+    }
+    
+    /* Custom styles as provided */
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1E88E5;
+        margin-bottom: 1rem;
+    }
+    .sub-header {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1565C0;
+        margin-bottom: 1rem;
+    }
+    .result-container {
+        background-color: #f0f2f6;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .priority-high {
+        color: #D32F2F;
+        font-weight: bold;
+    }
+    .priority-medium {
+        color: #FB8C00;
+        font-weight: bold;
+    }
+    .priority-low {
+        color: #388E3C;
+        font-weight: bold;
+    }
+    .calendar-event {
+        background-color: #E3F2FD;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border-left: 4px solid #1E88E5;
+    }
+</style>
+""", unsafe_allow_html=True)
 st.title("🫁 Tuberculosis Detection System")
 st.markdown("""
 This tool detects tuberculosis from chest X-ray images using a DeepLabV3 segmentation model.
 Upload an X-ray image and enter patient details to get a segmentation mask.
 """)
 
+
+# Sidebar for patient information
+st.sidebar.markdown("<div class='sub-header'>Patient Information</div>", unsafe_allow_html=True)
+
+patient_name = st.sidebar.text_input("Patient Name", "John Doe")
+age = st.sidebar.number_input("Age", min_value=1, max_value=100, value=45)
+
+sex_options = {"Male": 0, "Female": 1}
+sex_choice = st.sidebar.radio("Sex", list(sex_options.keys()))
+sex = sex_options[sex_choice]
+
+position_options = {"Anterior-Posterior (AP)": 0, "Posterior-Anterior (PA)": 1}
+position_choice = st.sidebar.radio("X-ray Position", list(position_options.keys()))
+position = position_options[position_choice]
+
+# Symptoms input
+symptoms = st.sidebar.text_area("Symptoms", 
+                               placeholder="Enter patient's symptoms...",
+                               value="Cough, fever, shortness of breath")
+
+# Model information
+st.sidebar.markdown("<div class='sub-header'>Model Information</div>", unsafe_allow_html=True)
+st.sidebar.info("""
+This application uses:
+- DeepLabV3 model for tuberculosis detection
+    
+Make sure the model files are in the same directory:
+- _best_model.pt
+""")
+
+# Image Upload
 uploaded_file = st.file_uploader("📤 Upload Chest X-ray Image", type=["jpg", "jpeg", "png"])
-
-age = st.slider("Patient Age", min_value=0, max_value=100, value=50)
-sex = st.radio("Sex", ["Male", "Female"])
-position = st.radio("Position", ["AP (Anterior-Posterior)", "PA (Posterior-Anterior)"])
-
-sex_mapping = {"Male": 0, "Female": 1}
-position_mapping = {"AP (Anterior-Posterior)": 0, "PA (Posterior-Anterior)": 1}
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
@@ -67,7 +145,7 @@ if uploaded_file is not None:
     
     if st.button("🔍 Analyze X-ray"):
         with st.spinner("Processing image..."):
-            result = detect_tuberculosis(temp_image_path, age, sex_mapping[sex], position_mapping[position])
+            result = detect_tuberculosis(temp_image_path, age, sex, position)
             mask_path = result["mask_path"]
         
         mask_image = Image.open(mask_path)
