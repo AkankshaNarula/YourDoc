@@ -1,7 +1,7 @@
 # AI-Powered Medical Diagnostic System for Radiologists
 
 ![Project Banner](assets/temp1.png)
-## Demo
+## Youtube Demo
 
 ### Video Demo
 Click on the below image to play on youtube.
