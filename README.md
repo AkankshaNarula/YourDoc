@@ -4,7 +4,8 @@
 ## Demo
 
 ### Video Demo
-[Video](https://youtu.be/qVQM_3wlfvQ?feature=shared)
+[![Watch the video](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID)
+
 
 
 ## Overview
