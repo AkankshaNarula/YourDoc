@@ -1,0 +1,12 @@
+streamlit
+tensorflow
+ultralytics
+pillow
+numpy
+easyocr
+groq
+segmentation-models-pytorch
+opencv-python-headless
+tzlocal
+torchvision
+
