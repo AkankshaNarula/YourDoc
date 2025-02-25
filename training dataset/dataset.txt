@@ -1,0 +1,3 @@
+The dataset used for training the segmentation models can be found on Kaggle
+For U-NET Pneumonia segmentation: iamtapendu/rsna-pneumonia-processed-dataset
+For DeepLabV3 Tuberculosis segmentation: iamtapendu/chest-x-ray-lungs-segmentation
