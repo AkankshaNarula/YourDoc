@@ -4,10 +4,7 @@
 ## Demo
 
 ### Video Demo
-Coming Soon
-
-### Deployed Solution
-Coming Soon
+[Video](https://youtu.be/qVQM_3wlfvQ?feature=shared)
 
 
 ## Overview
