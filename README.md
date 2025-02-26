@@ -50,7 +50,7 @@ These factors often lead to inconsistent diagnoses and delays in patient care. O
 
 ## Model Results
 
-### U-Net Model for Pneumonia Segmentation
+### U-Net Model for Pneumonia Segmentation and Classification
 
 The U-Net architecture, originally developed for biomedical image segmentation, serves as the backbone of our pneumonia detection system. This encoder-decoder network with skip connections excels at preserving spatial information while capturing contextual details at different scales.
 
@@ -89,11 +89,11 @@ The model achieves:
 
 The image shows three examples of the U-Net's segmentation capabilities
 
-Our U-Net implementation successfully segments pneumonia regions with high accuracy, providing radiologists with precise visualization of affected areas. The model demonstrated robust performance across various chest X-ray images, including those with different levels of disease severity and image quality variations.
+The U-Net implementation successfully segments pneumonia regions with high accuracy, providing radiologists with precise visualization of affected areas. The model demonstrated robust performance across various chest X-ray images, including those with different levels of disease severity and image quality variations.
 
 ### DeepLabV3 Model for Tuberculosis Segmentation
 
-DeepLabV3 represents a state-of-the-art architecture for semantic image segmentation that leverages atrous (dilated) convolutions and spatial pyramid pooling to effectively capture multi-scale contextual information. Our implementation employs a ResNet-101 backbone pre-trained on ImageNet, which we fine-tuned specifically for tuberculosis detection in chest X-rays.
+DeepLabV3 represents a state-of-the-art architecture for semantic image segmentation that leverages atrous (dilated) convolutions and spatial pyramid pooling to effectively capture multi-scale contextual information. The implementation employs a ResNet-101 backbone pre-trained on ImageNet, which we fine-tuned specifically for tuberculosis detection in chest X-rays.
 
 #### DeepLabV3 Loss Curve
 ![DeepLabV3 Loss Curve](assets/tb1.png)
@@ -115,7 +115,7 @@ The Mean Intersection over Union (mIoU) learning curve showcases excellent segme
 The pixel accuracy metrics further confirm the model's precision:
 
 
-Our DeepLabV3 implementation achieves exceptional tuberculosis segmentation performance with several key advantages:
+The DeepLabV3 implementation achieves exceptional tuberculosis segmentation performance with several key advantages:
 - **High IoU Score**: 0.94 on the validation set indicates precise localization of tuberculosis manifestations
 - **Excellent Pixel Accuracy**: >97% accuracy in pixel-level classification demonstrates the model's reliability
 
