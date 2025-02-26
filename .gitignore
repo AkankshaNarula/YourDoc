@@ -125,5 +125,5 @@ cython_debug/
 
 client_secret_104996183240-63co19c13llg7rhf8jc3o6hgptspmsto.apps.googleusercontent.com.json
 /pages/token.json
-saved_models/*.pt
+
 saved_models/*.keras
