@@ -15,7 +15,7 @@ def detect_tuberculosis(image_path, age, sex, position, device=None):
     model_path = "_best_model.pt"
     
     # Download model if not present
-    if not os.path.exists(MODEL_PATH):
+    if not os.path.exists(model_path):
         st.info("Downloading model... Please wait.")
         gdown.download(MODEL_URL, model_path, quiet=False)
 
