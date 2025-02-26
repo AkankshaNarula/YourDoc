@@ -11,7 +11,8 @@ from io import BytesIO
 import tempfile
 import io
 import sys
-
+import gdown
+import os
 from phi.agent import Agent
 from phi.model.google import Gemini
 from phi.tools.file import FileTools
@@ -105,7 +106,15 @@ def detect_pneumonia(image_path, age, sex, position):
     Returns:
         Dict containing segmentation mask path, probability, and original image path.
     """
-    model_path = '/Users/akankshanarula/Desktop/Google Girl Hackathon/YourDoc/saved_models/model_unet.keras'
+    
+    # Google Drive URL for model download
+    MODEL_URL = "https://drive.google.com/uc?id=1LW5vrzUQpCTZL7oSFS1xQ8sIw4aYGO9o"
+    model_path = "model.keras"
+
+    # Download model if not present
+    if not os.path.exists(model_path):
+        st.info("Downloading model... Please wait.")
+        gdown.download(MODEL_URL, model_path, quiet=False)
     
     # Check if model exists
     if not os.path.exists(model_path):
@@ -160,7 +169,7 @@ def detect_tuberculosis(image_path, age, sex, position, device=None):
     Returns:
         Dict containing segmentation mask path, probability, and original image path.
     """
-    model_path = '/Users/akankshanarula/Desktop/Google Girl Hackathon/YourDoc/saved_models/_best_model.pt'
+    model_path = 'saved_models/_best_model.pt'
     
     # Check if model exists
     if not os.path.exists(model_path):
@@ -168,7 +177,7 @@ def detect_tuberculosis(image_path, age, sex, position, device=None):
         return None
     
     device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.load(model_path, map_location=device)
+    model = torch.load(model_path, map_location=device, weights_only=False)
     model.eval()
     
     # Define preprocessing transformations
