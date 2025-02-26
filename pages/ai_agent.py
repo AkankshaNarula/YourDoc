@@ -343,7 +343,6 @@ def create_agents():
     calendar_agent = Agent(
         name="Medical Scheduling Assistant",
         model=gemini_model,
-        tools=[GoogleCalendarTools(credentials_path="/Users/akankshanarula/Desktop/Google Girl Hackathon/YourDoc/client_secret_104996183240-63co19c13llg7rhf8jc3o6hgptspmsto.apps.googleusercontent.com.json")],
         instructions=[
             f"You are scheduling assistant. Today is {datetime.datetime.now()} and the users timezone is {get_localzone_name()}.",
             "You schedule medical appointments in the doctor's calendar based on priority assignments.",
