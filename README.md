@@ -221,13 +221,6 @@ ai-medical-diagnostic-system/
 └── README.md                   # This file
 ```
 
-## Research Background
-
-The solution is grounded in robust research showing that AI assistance can improve clinicians' performance in detecting and localizing lung lesions on chest radiographs ([Source](https://www.atsjournals.org/doi/full/10.1164/rccm.201806-1013OC)).
-
-Additional relevant research:
-- [Deep Learning for Chest Radiograph Diagnosis](https://pubs.rsna.org/doi/10.1148/radiol.2017171117)
-- [AI in Radiology: Transforming Clinical Practice](https://www.nature.com/articles/s41551-018-0324-8)
 
 ## Future Work
 
