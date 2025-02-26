@@ -7,7 +7,16 @@ import matplotlib.pyplot as plt
 from torchvision import transforms
 
 def detect_tuberculosis(image_path, age, sex, position, device=None):
-    model_path = '/Users/akankshanarula/Desktop/Google Girl Hackathon/YourDoc/saved_models/_best_model.pt'
+ 
+    # Google Drive URL for model download
+    MODEL_URL = "https://drive.google.com/file/d/1AkpP6LV7WPl4Es9Axuc2b-CZzC5LSYlv/view?usp=sharing"
+    model_path = "_best_model.pt"
+    
+    # Download model if not present
+    if not os.path.exists(MODEL_PATH):
+        st.info("Downloading model... Please wait.")
+        gdown.download(MODEL_URL, model_path, quiet=False)
+
     device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
     model = torch.load(model_path, map_location=device)
     model.eval()
