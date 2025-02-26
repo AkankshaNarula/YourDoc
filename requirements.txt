@@ -9,4 +9,9 @@ segmentation-models-pytorch
 opencv-python-headless
 tzlocal
 torchvision
-
+sqlalchemy
+phidata
+google-api-python-client google-auth-httplib2 google-auth-oauthlib
+duckduckgo-search
+google-generativeai
+opencv-python
