@@ -214,11 +214,9 @@ ai-medical-diagnostic-system/
 │   ├── ai_agent.py             # AI agents implementation 
 │   ├── pneumonia_detection.py  # Pneumonia Segmentaton Model
 │   ├── tb_segemntation.py      # TB Segmentaton Model
-├── saved_models/              
-│   ├── unet.py               
-│   └── deeplabv3.py            
-├── training dataset/           # Dataset storage (not in repo)
-├── notebooks/                  # Jupyter notebooks for model training
+        
+├── training dataset/           # Dataset info
+├── notebooks/                  # Colab notebooks for model training
 ├── requirements.txt            # Project dependencies
 └── README.md                   # This file
 ```
