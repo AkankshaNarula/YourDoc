@@ -17,3 +17,7 @@ google-auth-oauthlib
 duckduckgo-search
 google-generativeai
 opencv-python
+gdown
+torch
+torchvision
+segmentation-models-pytorch

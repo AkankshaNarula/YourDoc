@@ -5,8 +5,8 @@ from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-# Load the trained UNet hybrid model
-MODEL_PATH = "/Users/akankshanarula/Desktop/Google Girl Hackathon/YourDoc/saved_models/model_unet.keras"
+# Load the updated trained model
+MODEL_PATH = "saved_models/updated_model_unet.keras"
 
 # Define custom loss functions used in training
 def iou_loss(y_true, y_pred):
@@ -50,7 +50,8 @@ st.markdown("""
 This tool detects pneumonia from chest X-ray images using a hybrid UNet model.
 Upload an X-ray image and enter patient details to get a segmentation mask and classification result.
 """)
-# Custom CSS to make the sidebar fixed and always expanded
+
+# Custom CSS styling (remains the same)
 st.markdown("""
 <style>
     [data-testid="stSidebar"][aria-expanded="true"] {
@@ -62,8 +63,6 @@ st.markdown("""
         background-color: #f0f2f6;
         padding-top: 2rem;
     }
-    
-    /* Custom styles as provided */
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
@@ -76,33 +75,9 @@ st.markdown("""
         color: #1565C0;
         margin-bottom: 1rem;
     }
-    .result-container {
-        background-color: #f0f2f6;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-    .priority-high {
-        color: #D32F2F;
-        font-weight: bold;
-    }
-    .priority-medium {
-        color: #FB8C00;
-        font-weight: bold;
-    }
-    .priority-low {
-        color: #388E3C;
-        font-weight: bold;
-    }
-    .calendar-event {
-        background-color: #E3F2FD;
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 10px;
-        border-left: 4px solid #1E88E5;
-    }
 </style>
 """, unsafe_allow_html=True)
+
 # Sidebar for patient information
 st.sidebar.markdown("<div class='sub-header'>Patient Information</div>", unsafe_allow_html=True)
 
@@ -126,12 +101,12 @@ symptoms = st.sidebar.text_area("Symptoms",
 st.sidebar.markdown("<div class='sub-header'>Model Information</div>", unsafe_allow_html=True)
 st.sidebar.info("""
 This application uses:
-- UNet model for pneumonia detection
+- Updated UNet model for pneumonia detection
 - DeepLabV3 model for tuberculosis detection
 - Gemini LLM for analysis and scheduling
 
 Make sure the model files are in the same directory:
-- model_unet.keras
+- updated_model_unet.keras
 - _best_model.pt
 """)
 
@@ -170,4 +145,3 @@ if uploaded_file is not None:
             st.error(f"⚠️ **Pneumonia Detected!** (Probability: {probability_percentage:.2f}%)")
         else:
             st.success(f"✅ **No Pneumonia Detected.** (Probability: {probability_percentage:.2f}%)")
-
