@@ -9,7 +9,7 @@ from torchvision import transforms
 def detect_tuberculosis(image_path, age, sex, position, device=None):
     model_path = 'saved_models/_best_model.pt'
     device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.load(model_path, map_location=device)
+    model = torch.load(model_path, map_location=device, weights_only=False)
     model.eval()
     
     transform = transforms.Compose([
