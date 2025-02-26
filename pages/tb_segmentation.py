@@ -5,6 +5,8 @@ from PIL import Image
 import torch
 import matplotlib.pyplot as plt
 from torchvision import transforms
+import gdown
+import os
 
 def detect_tuberculosis(image_path, age, sex, position, device=None):
  
