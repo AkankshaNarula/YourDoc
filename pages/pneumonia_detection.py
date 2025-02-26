@@ -4,9 +4,17 @@ import cv2
 from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import gdown
+# Google Drive URL for model download
+MODEL_URL = "https://drive.google.com/uc?id=1LW5vrzUQpCTZL7oSFS1xQ8sIw4aYGO9o"
+MODEL_PATH = "model.keras"
 
-# Load the updated trained model
-MODEL_PATH = "saved_models/updated_model_unet.keras"
+# Download model if not present
+if not os.path.exists(MODEL_PATH):
+    st.info("Downloading model... Please wait.")
+    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+
+
 
 # Define custom loss functions used in training
 def iou_loss(y_true, y_pred):
