@@ -5,6 +5,7 @@ from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import gdown
+import os
 # Google Drive URL for model download
 MODEL_URL = "https://drive.google.com/uc?id=1LW5vrzUQpCTZL7oSFS1xQ8sIw4aYGO9o"
 MODEL_PATH = "model.keras"
