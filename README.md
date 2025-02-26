@@ -19,11 +19,12 @@ This AI-powered diagnostic system aims to assist radiologists in high-volume hea
 - **U-Net model** for pneumonia segmentation
 - **DeepLabV3 model** for tuberculosis segmentation
 - **Six specialized AI agents** to automate the diagnostic workflow:
-  - Disease Detection Agents (Pneumonia & Tuberculosis)
-  - Doctor Verification Agent
-  - Patient Prioritization Agent
-  - Calendar Scheduling Agent
-  - Patient Notification Agent
+    1) Disease Detection Agents: Two agents for pneumonia and tuberculosis that analyze segmentation masks and generate preliminary inferences.
+    2) Doctor Verication Agent: Ensures the findings align with the radiologist’s assessment, incorporates their feedback, and creates a final report.
+    3) Patient Prioritization Agent: Ranks cases by severity and symptoms described in the final report, generating a priority queue.
+    4) Calendar Scheduling Agent: Automates appointment booking—same-day for critical cases, 2-5 days for
+    moderate, and 1-2 weeks for low-priority.
+    5) Patient Notication Agent: Informs patients via email about their appointments.
 - **Streamlit-based web interface** for easy interaction
 - **Integration with Google Calendar API** for automated appointment scheduling
 
