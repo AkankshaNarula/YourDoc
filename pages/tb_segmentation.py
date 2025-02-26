@@ -8,37 +8,41 @@ from torchvision import transforms
 import gdown
 import os
 
-def detect_tuberculosis(image_path, age, sex, position, device=None):
- 
-    # Google Drive URL for model download
-    MODEL_URL = "https://drive.google.com/file/d/1AkpP6LV7WPl4Es9Axuc2b-CZzC5LSYlv/view?usp=sharing"
-    model_path = "_best_model.pt"
-    
-    # Download model if not present
-    if not os.path.exists(model_path):
-        st.info("Downloading model... Please wait.")
-        gdown.download(MODEL_URL, model_path, quiet=False)
+# Google Drive URL for model download
+MODEL_URL = "https://drive.google.com/file/d/1AkpP6LV7WPl4Es9Axuc2b-CZzC5LSYlv/view?usp=sharing"
+MODEL_PATH = "_best_model.pt"
 
-    device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.load(model_path, map_location=device)
-    model.eval()
-    
+# Download model if not present
+if not os.path.exists(MODEL_PATH):
+    st.info("Downloading model... Please wait.")
+    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+
+# Load the model
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = torch.load(MODEL_PATH, map_location=device)
+model.eval()
+
+# Function to preprocess input image
+def preprocess_image(image, target_size=(256, 256)):
     transform = transforms.Compose([
         transforms.Grayscale(num_output_channels=3),
-        transforms.Resize((256, 256)),
+        transforms.Resize(target_size),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
-    
+    return transform(image).unsqueeze(0).to(device)
+
+# Function to predict tuberculosis mask
+def detect_tuberculosis(image_path, age, sex, position):
     image = Image.open(image_path).convert("L")
-    image = transform(image).unsqueeze(0).to(device)
+    image_tensor = preprocess_image(image)
     
     with torch.no_grad():
         try:
-            output = model(image)
+            output = model(image_tensor)
         except TypeError:
             metadata = torch.tensor([[age / 100.0, sex, position]], dtype=torch.float32).to(device)
-            output = model(image, metadata)
+            output = model(image_tensor, metadata)
         
         mask = output.squeeze().cpu().numpy()
         if mask.ndim == 3:
@@ -55,7 +59,6 @@ def detect_tuberculosis(image_path, age, sex, position, device=None):
     }
 
 # Streamlit UI
-# Custom CSS to make the sidebar fixed and always expanded
 st.markdown("""
 <style>
     [data-testid="stSidebar"][aria-expanded="true"] {
@@ -108,16 +111,15 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 st.title("🫁 Tuberculosis Detection System")
 st.markdown("""
 This tool detects tuberculosis from chest X-ray images using a DeepLabV3 segmentation model.
 Upload an X-ray image and enter patient details to get a segmentation mask.
 """)
 
-
 # Sidebar for patient information
-st.sidebar.markdown("<div class='sub-header'>Patient Information</div>", unsafe_allow_html=True)
-
+st.sidebar.header("Patient Information")
 patient_name = st.sidebar.text_input("Patient Name", "John Doe")
 age = st.sidebar.number_input("Age", min_value=1, max_value=100, value=45)
 
@@ -128,21 +130,6 @@ sex = sex_options[sex_choice]
 position_options = {"Anterior-Posterior (AP)": 0, "Posterior-Anterior (PA)": 1}
 position_choice = st.sidebar.radio("X-ray Position", list(position_options.keys()))
 position = position_options[position_choice]
-
-# Symptoms input
-symptoms = st.sidebar.text_area("Symptoms", 
-                               placeholder="Enter patient's symptoms...",
-                               value="Cough, fever, shortness of breath")
-
-# Model information
-st.sidebar.markdown("<div class='sub-header'>Model Information</div>", unsafe_allow_html=True)
-st.sidebar.info("""
-This application uses:
-- DeepLabV3 model for tuberculosis detection
-    
-Make sure the model files are in the same directory:
-- _best_model.pt
-""")
 
 # Image Upload
 uploaded_file = st.file_uploader("📤 Upload Chest X-ray Image", type=["jpg", "jpeg", "png"])
