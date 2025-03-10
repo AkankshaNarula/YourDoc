@@ -147,35 +147,49 @@ def get_prioritization_prompt(final_report, patient_info, patient_records_json):
     OTHER PATIENTS WAITING:
     {patient_records_json}
     
-    Based on the severity and urgency of each case, assign a priority level (High, Medium, or Low) to each patient including the current patient.
-    Return a prioritized list of patients with recommended appointment timeframes. Explain your reasoning.
+    First, assign a severity level (High, Medium, or Low) to the current patient based on their report and information.
+    
+    Then, based on the severity and urgency of each case, prioritize all patients including the current patient.
+    
+    Your response must include:
+    1. Current patient severity level (High, Medium, or Low)
+    2. A prioritized list of all patients with their severity levels and recommended appointment timeframes
+    3. Brief explanation of your reasoning for each patient's priority level
+    
+    Format the current patient information at the beginning like this:
+    CURRENT PATIENT SEVERITY: [High/Medium/Low]
     """
 
+# Function to generate scheduling prompt
 def get_scheduling_prompt(patient_data, start_date, end_date, duration):
-    """
-    Generate prompt for appointment scheduling.
-    
-    Args:
-        patient_data (dict): Patient data dictionary
-        start_date (datetime.date): Start date for appointment search
-        end_date (datetime.date): End date for appointment search
-        duration (str): Duration of the appointment
+        """
+        Generate prompt for appointment scheduling.
         
-    Returns:
-        str: Formatted prompt for the calendar agent
-    """
-    return f"""
-    I need to schedule an appointment for a patient with the following details:
-    
-    Name: {patient_data["name"]}
-    Age: {patient_data["age"]}
-    Sex: {patient_data["sex"]}
-    Condition: {patient_data["condition"]}
-    Priority: {patient_data["severity"] if "severity" in patient_data else "Medium"}
-    
-    Please find available slots between {start_date} and {end_date} for a {duration} appointment.
-    Based on the patient's priority level ({patient_data["severity"] if "severity" in patient_data else "Medium"}), recommend the best time for scheduling.
-    For high priority, prefer same-day or next-day appointments.
-    For medium priority, prefer appointments within 2-5 days.
-    For low priority, scheduling within 1-2 weeks is acceptable.
-    """
+        Args:
+            patient_data (dict): Patient data dictionary
+            start_date (datetime.date): Start date for appointment search
+            end_date (datetime.date): End date for appointment search
+            duration (str): Duration of the appointment
+            
+        Returns:
+            str: Formatted prompt for the calendar agent
+        """
+        return f"""
+        I need to schedule an appointment for a patient with the following details:
+        
+        Name: {patient_data["name"]}
+        Age: {patient_data["age"]}
+        Sex: {patient_data["sex"]}
+        Condition: {patient_data["condition"]}
+        Priority: {patient_data["severity"] if "severity" in patient_data else "Medium"}
+        
+        Please find available slots between {start_date} and {end_date} for a {duration} appointment.
+        Based on the patient's priority level ({patient_data["severity"] if "severity" in patient_data else "Medium"}), recommend the best time for scheduling.
+        Only schedule appointments between 9:00 AM and 11:00 AM.
+        For high priority, prefer same-day or next-day appointments with 45-minute duration.
+        For medium priority, schedule within 2-5 days with 30-minute duration.
+        For low priority, scheduling within 1-2 weeks is acceptable with 15-minute duration.
+        
+        If there are too many patients to schedule in one day, continue scheduling on subsequent days,
+        always prioritizing high severity patients first, then medium, then low.
+        """

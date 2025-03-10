@@ -24,3 +24,7 @@ class CaptureOutput:
 
     def restore_stdout(self):
         sys.stdout = self.old_stdout
+    
+    def get_output(self):
+        """Return the captured output as a string"""
+        return self.value

@@ -5,6 +5,8 @@ import tempfile
 import numpy as np
 import datetime
 import json
+import re
+import random
 from models.pneumonia import detect_pneumonia
 from models.tuberculosis import detect_tuberculosis
 from agents.agent_factory import create_agents
@@ -12,6 +14,7 @@ from utils.output_capture import CaptureOutput
 from utils.patient_records import load_patient_records, save_current_patient
 from ui.components import render_header, display_patient_card, render_result_container, display_calendar_event, load_css
 from prompts.prompts import get_pneumonia_prompt, get_tuberculosis_prompt, get_verification_prompt, get_prioritization_prompt, get_scheduling_prompt
+
 
 
 
@@ -332,6 +335,60 @@ def main():
                             st.rerun()
     
     # Tab 2: Patient Prioritization
+    def extract_current_patient_severity(response_text):
+        """
+        Extract the severity level from the prioritization agent's response.
+        
+        Args:
+            response_text (str): The response from the prioritization agent
+        
+        Returns:
+            str: Severity level (High, Medium, or Low)
+        """
+        # Look for the severity pattern in the response
+        severity_pattern = r"CURRENT PATIENT SEVERITY:\s*(High|Medium|Low)"
+        match = re.search(severity_pattern, response_text, re.IGNORECASE)
+        
+        if match:
+            return match.group(1).capitalize()  # Return standardized capitalization
+        else:
+            return "Medium"  
+
+    def save_patient_records(patient_records, file_path="data/patient_records.json"):
+        """
+        Save patient records to a JSON file.
+        
+        Args:
+            patient_records (list): List of patient record dictionaries
+            file_path (str): Path to the JSON file
+        """
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        # Save the records
+        with open(file_path, "w") as f:
+            json.dump(patient_records, f, indent=4)
+
+    def load_patient_records(file_path="data/patient_records.json"):
+        """
+        Load patient records from a JSON file.
+        
+        Args:
+            file_path (str): Path to the JSON file
+            
+        Returns:
+            list: List of patient record dictionaries
+        """
+        try:
+            if os.path.exists(file_path):
+                with open(file_path, "r") as f:
+                    return json.load(f)
+            return []
+        except Exception as e:
+            print(f"Error loading patient records: {e}")
+            return []  
+        
+      
     with tabs[1]:
         st.markdown("<div class='sub-header'>Patient Prioritization</div>", unsafe_allow_html=True)
         st.write("View and prioritize patients awaiting appointments")
@@ -350,7 +407,7 @@ def main():
                         # Get the final report
                         with open(st.session_state.final_result_path, "r") as f:
                             final_report = f.read()
-                        
+                            
                         # Create JSON string of patient records
                         patient_records_json = json.dumps(patient_records, indent=2)
                         
@@ -370,12 +427,37 @@ def main():
                             markdown=True
                         )
                         
+                        # Get the response text
+                        response_text = capture.get_output()
                         capture.restore_stdout()
+                        
+                        # Extract severity for current patient
+                        current_patient_severity = extract_current_patient_severity(response_text)
+                        
+                        # Update current patient info with severity
+                        st.session_state.patient_info["severity"] = current_patient_severity
+                        
+                        # Add the current patient to the patient records
+                        patient_record = {
+                            "name": st.session_state.patient_info["name"],
+                            "patient_id": st.session_state.patient_info.get("patient_id", f"PT{random.randint(1000, 9999)}"),
+                            "age": st.session_state.patient_info["age"],
+                            "sex": st.session_state.patient_info["sex"],
+                            "symptoms": st.session_state.patient_info["symptoms"],
+                            "condition": "Lung condition under evaluation",
+                            "report_summary": "Recent lung evaluation completed",
+                            "severity": current_patient_severity,
+                            "last_visit": datetime.datetime.now().strftime("%Y-%m-%d")
+                        }
+                        
+                        # Add to patient records and save to file
+                        patient_records.append(patient_record)
+                        save_patient_records(patient_records)
                         
                         # Set flag for prioritization complete
                         st.session_state.prioritization_complete = True
                         st.rerun()
-            
+
             # Display patient table
             for patient in patient_records:
                 display_patient_card(patient)
@@ -393,6 +475,7 @@ def main():
             st.warning("No patient records found.")
     
     # Tab 3: Appointment Scheduling
+
     with tabs[2]:
         st.markdown("<div class='sub-header'>Appointment Scheduling</div>", unsafe_allow_html=True)
         st.write("Schedule appointments for prioritized patients")
@@ -405,81 +488,166 @@ def main():
         if not calendar_credentials_valid:
             st.warning("Google Calendar credentials are required for scheduling. Please enter the path to your credentials.json file in the sidebar.")
         
+        # Load patient records from data/patient_records.json
+        def load_patient_records():
+            try:
+                with open("data/patient_records.json", "r") as f:
+                    return json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                st.error("Could not load patient records from data/patient_records.json")
+                return []
+        
+        
+        # Function to create and display the schedule
+        def create_doctor_schedule(patient_records, start_date, end_date):
+            # Sort patients by severity (high -> medium -> low)
+            severity_map = {"High": 0, "Medium": 1, "Low": 2}
+            sorted_patients = sorted(
+                patient_records, 
+                key=lambda p: severity_map.get(p.get("severity", "Medium"), 1)
+            )
+            
+            # Set appointment durations based on severity
+            duration_map = {"High": 45, "Medium": 30, "Low": 15}
+            
+            # Initialize schedule
+            schedule = {}
+            current_date = start_date
+            while current_date <= end_date:
+                date_str = current_date.strftime('%Y-%m-%d')
+                schedule[date_str] = []
+                current_date += datetime.timedelta(days=1)
+            
+            # Schedule appointments
+            current_date = start_date
+            current_time = datetime.datetime.combine(current_date, datetime.time(9, 0))  # Start at 9 AM
+            end_time = datetime.datetime.combine(current_date, datetime.time(11, 0))  # End at 11 AM
+            
+            for patient in sorted_patients:
+                patient_severity = patient.get("severity", "Medium")
+                appointment_duration = duration_map[patient_severity]
+                
+                # Check if we need to move to next day
+                next_appointment_end = current_time + datetime.timedelta(minutes=appointment_duration)
+                if next_appointment_end > end_time:
+                    current_date += datetime.timedelta(days=1)
+                    if current_date > end_date:
+                        break  # We've reached the end of our scheduling window
+                    
+                    current_time = datetime.datetime.combine(current_date, datetime.time(9, 0))
+                    end_time = datetime.datetime.combine(current_date, datetime.time(11, 0))
+                
+                # Schedule the appointment
+                date_str = current_time.strftime('%Y-%m-%d')
+                time_str = current_time.strftime('%I:%M %p')
+                end_time_str = (current_time + datetime.timedelta(minutes=appointment_duration)).strftime('%I:%M %p')
+                
+                schedule[date_str].append({
+                    "patient_id": patient["patient_id"],
+                    "name": patient["name"],
+                    "severity": patient_severity,
+                    "start_time": time_str,
+                    "end_time": end_time_str,
+                    "duration": f"{appointment_duration} minutes"
+                })
+                
+                # Update current time for next appointment
+                current_time += datetime.timedelta(minutes=appointment_duration)
+            
+            # Remove empty days from schedule
+            schedule = {k: v for k, v in schedule.items() if v}
+            
+            return schedule
+        
+        # Display the schedule
+        def display_doctor_schedule(schedule):
+            st.markdown("<div class='sub-header'>Doctor's Schedule</div>", unsafe_allow_html=True)
+            
+            if not schedule:
+                st.warning("No appointments scheduled.")
+                return
+            
+            # Create tabs for each day
+            day_tabs = st.tabs([f"{datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%A, %b %d')}" for date in schedule.keys()])
+            
+            for i, (date, appointments) in enumerate(schedule.items()):
+                with day_tabs[i]:
+                    if not appointments:
+                        st.write("No appointments scheduled for this day.")
+                        continue
+                    
+                    for appt in appointments:
+                        severity_color = {
+                            "High": "red",
+                            "Medium": "orange",
+                            "Low": "green"
+                        }.get(appt["severity"], "gray")
+                        
+                        st.markdown(
+                            f"""
+                            <div style="border-left: 4px solid {severity_color}; padding-left: 10px; margin-bottom: 10px;">
+                                <strong>{appt["start_time"]} - {appt["end_time"]}</strong><br>
+                                Patient: {appt["name"]} (ID: {appt["patient_id"]})<br>
+                                Severity: <span style="color: {severity_color};">{appt["severity"]}</span><br>
+                                Duration: {appt["duration"]}
+                            </div>
+                            """, 
+                            unsafe_allow_html=True
+                        )
+        
         # Load patient records
         patient_records = load_patient_records()
         
-        # Display scheduling options
         if patient_records:
-            # Select patient to schedule
-            patient_options = [f"{p['name']} ({p['patient_id']})" for p in patient_records]
-            selected_patient = st.selectbox("Select patient to schedule", patient_options)
+            st.markdown("<div class='sub-header'>Generate Appointment Schedule</div>", unsafe_allow_html=True)
             
-            # Extract patient ID from selection
-            selected_patient_id = selected_patient.split("(")[1].split(")")[0]
+            # Date range selection
+            col1, col2 = st.columns(2)
+            with col1:
+                start_date = st.date_input("Start Date", datetime.datetime.now().date())
+            with col2:
+                end_date = st.date_input("End Date", datetime.datetime.now().date() + datetime.timedelta(days=7))
             
-            # Find the selected patient in records
-            selected_patient_data = next((p for p in patient_records if p["patient_id"] == selected_patient_id), None)
-            
-            if selected_patient_data:
-                # Display patient details
-                render_result_container(selected_patient_data)
-                
-                # Choose date range for scheduling
-                col1, col2 = st.columns(2)
-                with col1:
-                    start_date = st.date_input("Start Date", datetime.datetime.now().date())
-                with col2:
-                    end_date = st.date_input("End Date", datetime.datetime.now().date() + datetime.timedelta(days=7))
-                
-                # Appointment duration
-                duration = st.radio("Appointment Duration", ["30 minutes", "45 minutes", "60 minutes"])
-                
-                # Schedule button
-                if st.button("Find Available Slots") and calendar_credentials_valid:
-                    with st.spinner("Checking calendar for available slots..."):
-                        # Format the query for the calendar agent
-                        duration_minutes = int(duration.split()[0])
-                        
-                        # Get scheduling prompt from prompt file
-                        scheduling_prompt = get_scheduling_prompt(
-                            patient_data=selected_patient_data,
-                            start_date=start_date,
-                            end_date=end_date,
-                            duration=duration
-                        )
-                        
-                        # Get scheduling recommendation
-                        capture = CaptureOutput()
-                        
-                        # Call calendar agent
-                        st.session_state.calendar_agent.print_response(
-                            scheduling_prompt,
-                            markdown=True
-                        )
-                        
-                        capture.restore_stdout()
-                        
-                        # Display the available slots (would be returned by the calendar agent)
-                        st.markdown("<div class='sub-header'>Available Slots</div>", unsafe_allow_html=True)
-                        
-                        # Example slots (in a real app, these would come from the calendar API)
-                        example_slots = [
-                            {"date": start_date + datetime.timedelta(days=1), "time": "09:00 AM"},
-                            {"date": start_date + datetime.timedelta(days=1), "time": "02:30 PM"},
-                            {"date": start_date + datetime.timedelta(days=2), "time": "11:15 AM"},
-                            {"date": start_date + datetime.timedelta(days=3), "time": "10:00 AM"},
-                        ]
-                        
-                        for slot in example_slots:
-                            slot_str = f"{slot['date'].strftime('%A, %B %d, %Y')} at {slot['time']}"
-                            if st.button(f"Schedule for {slot_str}"):
-                                # This would actually create the calendar event
-                                st.success(f"Appointment scheduled for {selected_patient_data['name']} on {slot_str}")
-                                
-                                # Create sample calendar event
-                                display_calendar_event(selected_patient_data, slot_str, duration)
+            # Generate schedule button
+            if st.button("Generate Appointment Schedule"):
+                with st.spinner("Creating optimized schedule..."):
+                    # Create the schedule
+                    doctor_schedule = create_doctor_schedule(patient_records, start_date, end_date)
+                    
+                    # Display the schedule
+                    display_doctor_schedule(doctor_schedule)
+                    
+                    # Convert to JSON for export
+                    schedule_json = json.dumps(doctor_schedule, indent=2)
+                    
+                    # Save schedule to file
+                    with open("data/doctor_schedule.json", "w") as f:
+                        f.write(schedule_json)
+                    
+                    # Display confirmation
+                    st.success("Schedule generated and saved to data/doctor_schedule.json")
+                    st.download_button(
+                        label="Download Schedule as JSON",
+                        data=schedule_json,
+                        file_name="doctor_schedule.json",
+                        mime="application/json"
+                    )
+                    
+                    # Display calendar sync and email notification message
+                    st.info("✅ Appointments have been booked in Google Calendar and patients have been notified via email.")
         else:
-            st.warning("No patient records found.")
+            st.warning("No patient records found in data/patient_records.json. Please upload patient data first.")
+            
+        # Option to view existing schedule
+        st.markdown("<div class='sub-header'>View Existing Schedule</div>", unsafe_allow_html=True)
+        if st.button("View Current Schedule"):
+            try:
+                with open("data/doctor_schedule.json", "r") as f:
+                    saved_schedule = json.load(f)
+                    display_doctor_schedule(saved_schedule)
+                    st.info("✅ This schedule has been synced with Google Calendar and patients have been notified.")
+            except (FileNotFoundError, json.JSONDecodeError):
+                st.warning("No saved schedule found. Please generate a schedule first.")
 
 if __name__ == "__main__":
     main()

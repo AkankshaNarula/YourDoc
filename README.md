@@ -1,4 +1,4 @@
-# AI-Powered Medical Diagnostic System for Radiologists
+# YourDoc: AI-Powered Medical Diagnostic System for Radiologists
 
 ![Project Banner](assets/temp1.png)
 ## Youtube Demo
