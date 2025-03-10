@@ -4,8 +4,7 @@
 ## Youtube Demo
 
 Click on the below image to play on youtube.
-
-[![Watch the video](https://img.youtube.com/vi/Ih9-R3n7MFs/maxresdefault.jpg)](https://www.youtube.com/watch?v=Ih9-R3n7MFs)
+[![Watch the video](https://img.youtube.com/vi/qVQM_3wlfvQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=qVQM_3wlfvQ)
 
 ## Live Deployed App: https://yourdoc.streamlit.app/ai_agent
 
@@ -42,7 +41,7 @@ These factors often lead to inconsistent diagnoses and delays in patient care. O
 
 ## Technology Stack
 
-- **PyTorch** - For medical image segmentation models
+- **PyTorch, Tensorflow** - For medical image segmentation models
 - **PhiData framework** - For AI Agents System
 - **Gemini API** - Large Language Model
 - **Google Calendars API** - For appointment scheduling
@@ -54,6 +53,7 @@ These factors often lead to inconsistent diagnoses and delays in patient care. O
 ### U-Net Model for Pneumonia Segmentation and Classification
 
 The U-Net architecture, originally developed for biomedical image segmentation, serves as the backbone of our pneumonia detection system. This encoder-decoder network with skip connections excels at preserving spatial information while capturing contextual details at different scales.
+The model takes into input patient details and x-ray, gives output as segmented infected mask, and the probability of pneumonia.
 
 #### Training Performance
 
@@ -86,7 +86,7 @@ The model achieves:
 
 #### Segmentation Results
 
-![U-Net Segmentation Examples](assets/pneumonia_infer.png)
+![U-Net Segmentation Examples](assets/pneumonia_infer_updated.png)
 
 The image shows three examples of the U-Net's segmentation capabilities
 
@@ -95,6 +95,7 @@ The U-Net implementation successfully segments pneumonia regions with high accur
 ### DeepLabV3 Model for Tuberculosis Segmentation
 
 DeepLabV3 represents a state-of-the-art architecture for semantic image segmentation that leverages atrous (dilated) convolutions and spatial pyramid pooling to effectively capture multi-scale contextual information. The implementation employs a ResNet-101 backbone pre-trained on ImageNet, which we fine-tuned specifically for tuberculosis detection in chest X-rays.
+The model segments the lung region mask which is applied to original x-ray, to extract features like lung area, left-right lung ratio which are then provided to llm via agent to perform the classification.
 
 #### DeepLabV3 Loss Curve
 ![DeepLabV3 Loss Curve](assets/tb1.png)
@@ -253,3 +254,4 @@ ai-medical-diagnostic-system/
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
