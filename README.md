@@ -209,12 +209,20 @@ streamlit run app.py
 ```
 ai-medical-diagnostic-system/
 ├── app.py                      # Streamlit web application
-├── pages/                     
-
+├── pages/   
 │   ├── ai_agent.py             # AI agents implementation 
 │   ├── pneumonia_detection.py  # Pneumonia Segmentaton Model
-│   ├── tb_segemntation.py      # TB Segmentaton Model
-        
+│   ├── tb_segemntation.py      # TB Segmentaton Model      
+├── agents/ 
+│   ├── agent_factory.py  
+│   ├── pneumonia_agent.py  
+│   ├── tuberculosis_agent.py 
+│   ├── verififcation_agent.py 
+│   ├── prioritization_agent.py  
+│   ├── calendar_agent.py 
+│   ├── notification_agent.py 
+├── models/                     # Function for running 2 detction agents
+├── prompts/                    # Prompts for agents
 ├── training dataset/           # Dataset info
 ├── notebooks/                  # Colab notebooks for model training
 ├── requirements.txt            # Project dependencies

@@ -1,7 +1,6 @@
 import streamlit as st
 from PIL import Image
 import os
-from pages import ai_agent, pneumonia_detection, tb_segmentation
 
 # Set page configuration
 st.set_page_config(
